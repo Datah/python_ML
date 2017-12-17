@@ -1,4 +1,4 @@
-from MLBasics.regression_core import extend_vals, least_squares_cost, least_squares_next_params
+from regression_core import extend_vals, least_squares_cost, least_squares_next_params
 
 
 def linear_derivs(*coeffs):

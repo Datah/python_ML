@@ -1,6 +1,6 @@
 import math
 
-from MLBasics.regression_core import extend_vals, least_squares_cost, least_squares_next_params, dot
+from regression_core import extend_vals, least_squares_cost, least_squares_next_params, dot
 
 
 def logistic_derivs(logistic_func, *coeffs):
@@ -61,8 +61,9 @@ def logistic_regression_bounded(log_func, learning_rate, bound, stop_threshold, 
     return log_func
 
 
-pts = (((0.1,), 0), ((0.4,), 0), ((0.3,), 0), ((0.2,), 0), ((0.75,), 1), ((0.7,), 1), ((0.9,), 1), ((0.6,), 1))
-params = (-0.1, 0.2)
+pts = (((0.1, 0.8, 0.2), 0), ((0.4, 0.92, 0.35), 0), ((0.3, 0.89, 0.22), 0), ((0.2, 0.81, 0.27), 0),
+       ((0.75, 0.4, 0.4), 1), ((0.7, 0.79, 0.4), 1), ((0.9, 0.52, 0.73), 1), ((0.6, 0.01, 0.99), 1))
+params = (0.1, 0.1, 0.1, 0.1)
 
 log_func = logistic_function(*params)
 print("Cost 1: {}".format(least_squares_cost(log_func, *pts)))
