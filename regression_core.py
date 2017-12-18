@@ -33,11 +33,48 @@ def logistic_fcost(func_premap):
     return {"cost": cost, "cost_deriv": deriv}
 
 
-def cost(funcmap, pts):
+def squared_coefficient_regularization(params):
+    return sum(params[n]**2 for n in xrange(1, len(params)))
+
+
+def squared_coefficient_regularization_gradient(params):
+    pre = tuple(2*params[n] for n in xrange(1, len(params)))
+    return (0,) + pre
+
+def no_regularization(params):
+    return 0
+
+def no_regularization_gradient(params):
+    return tuple(0 for n in xrange(len(params)))
+
+
+def non_regularized_cost(funcmap, pts):
     np = len(pts)
     cost_function = funcmap["cost"]
     cost_sum = math.fsum(cost_function(x, y) for x, y in pts)
     return cost_sum / np
+
+
+def non_regularized_gradient_descent_value(funcmap, pts):
+    derivs = funcmap["derivs"]
+    cost_function_derivative = funcmap["cost_deriv"]
+    numcoeffs = len(derivs)
+    np = len(pts)
+    gradvals = tuple(math.fsum(cost_function_derivative(n, x, y) for x, y in pts) / np for n in xrange(numcoeffs))
+    return gradvals
+
+
+def regularized_cost(funcmap, pts, regularization_function = no_regularization, l = 0):
+    params = funcmap["params"]
+    cost_sum = non_regularized_cost(funcmap, pts) + l * regularization_function(params)
+    return cost_sum
+
+
+def regularized_gradient_descent_value(funcmap, pts, regularization_gradient = no_regularization_gradient, l = 0):
+    rgrad = regularization_gradient(funcmap["params"])
+    gradvals = non_regularized_gradient_descent_value(funcmap, pts)
+    gradvals_final = tuple(gradvals[n] + l * rgrad[n] for n in xrange(len(gradvals)))
+    return gradvals_final
 
 
 def dot(a, b):
@@ -45,15 +82,6 @@ def dot(a, b):
         print("Error doing dot product for {} with {}".format(a, b))
         raise TypeError
     return sum(a[n] * b[n] for n in range(0, len(a)))
-
-
-def gradient_descent_value(funcmap, pts):
-    derivs = funcmap["derivs"]
-    cost_function_derivative = funcmap["cost_deriv"]
-    numcoeffs = len(derivs)
-    np = len(pts)
-    gradvals = tuple(math.fsum(cost_function_derivative(n, x, y) for x, y in pts) / np for n in xrange(numcoeffs))
-    return gradvals
 
 
 def next_params(funcmap, learning_rate, gradvals):

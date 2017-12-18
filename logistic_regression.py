@@ -1,6 +1,6 @@
 import math
 
-from regression_core import extend_vals, cost, next_params, dot, gradient_descent_value, logistic_fcost
+from regression_core import extend_vals, non_regularized_cost, next_params, dot, non_regularized_gradient_descent_value, logistic_fcost
 
 
 def logistic_derivs(logistic_func, coeffs):
@@ -32,26 +32,26 @@ def logistic_function(coeffs):
 
 def logistic_regression(log_func, iterations, learning_rate, pts):
     for itcount in xrange(iterations):
-        gradvals = gradient_descent_value(log_func, pts)
+        gradvals = non_regularized_gradient_descent_value(log_func, pts)
         nextparams = next_params(log_func, learning_rate, gradvals)
         log_func = logistic_function(tuple(nextparams))
-        curr_cost = cost(log_func, pts)
+        curr_cost = non_regularized_cost(log_func, pts)
         print("Cost after iteration {} is : {}".format(itcount, curr_cost))
     return log_func
 
 
 def logistic_regression_bounded(log_func, learning_rate, bound, stop_threshold, pts):
-    curr_cost = cost(log_func, pts)
+    curr_cost = non_regularized_cost(log_func, pts)
     print("Initial cost is: {}".format(curr_cost))
     increasing_count = 0
     consecutive_small_count = 0
     itcount = 0
     while True:
         itcount += 1
-        gradvals = gradient_descent_value(log_func, pts)
+        gradvals = non_regularized_gradient_descent_value(log_func, pts)
         nextparams = next_params(log_func, learning_rate, gradvals)
         log_func = logistic_function(nextparams)
-        last_cost, curr_cost = curr_cost, cost(log_func, pts)
+        last_cost, curr_cost = curr_cost, non_regularized_cost(log_func, pts)
 
         diff = last_cost - curr_cost
         print("Cost after iteration {} is : {} with difference {}".format(itcount, curr_cost, diff))
@@ -73,7 +73,7 @@ pts = (((0.1, 0.8, 0.2), 0), ((0.4, 0.92, 0.35), 0), ((0.3, 0.89, 0.22), 0), ((0
 params = (0.1, 0.1, 0.1, 0.1)
 
 log_func = logistic_function(params)
-print("Cost 1: {}".format(cost(log_func, pts)))
+print("Cost 1: {}".format(non_regularized_cost(log_func, pts)))
 
 final_func = logistic_regression_bounded(log_func, 0.1, 0.000001, 10, pts)
 
