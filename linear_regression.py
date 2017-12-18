@@ -106,7 +106,7 @@ params = (-20, 10)
 lin_func = linear_function(params)
 print("Cost 1: {}".format(non_regularized_cost(lin_func, pts)))
 
-final_func = ridge_regression_bounded(lin_func, 0.1, 0.000001, 10, pts, 0.01)
+final_func = ridge_regression_bounded(lin_func, 0.01, 0.000001, 10, pts, 200)
 
 print(list(final_func["params"]))
 

@@ -66,14 +66,16 @@ def non_regularized_gradient_descent_value(funcmap, pts):
 
 def regularized_cost(funcmap, pts, regularization_function = no_regularization, l = 0):
     params = funcmap["params"]
-    cost_sum = non_regularized_cost(funcmap, pts) + l * regularization_function(params)
+    np = len(pts)
+    cost_sum = non_regularized_cost(funcmap, pts) + l / np * regularization_function(params)
     return cost_sum
 
 
 def regularized_gradient_descent_value(funcmap, pts, regularization_gradient = no_regularization_gradient, l = 0):
     rgrad = regularization_gradient(funcmap["params"])
     gradvals = non_regularized_gradient_descent_value(funcmap, pts)
-    gradvals_final = tuple(gradvals[n] + l * rgrad[n] for n in xrange(len(gradvals)))
+    np = len(pts)
+    gradvals_final = tuple(gradvals[n] + l / np * rgrad[n] for n in xrange(len(gradvals)))
     return gradvals_final
 
 
