@@ -1,6 +1,8 @@
 import math
 
-from regression_core import extend_vals, non_regularized_cost, next_params, dot, non_regularized_gradient_descent_value, logistic_fcost
+from regression_core import extend_vals, non_regularized_cost, next_params, dot, \
+    non_regularized_gradient_descent_value,logistic_fcost, regularized_gradient_descent_value, regularized_cost, \
+    squared_coefficient_regularization, squared_coefficient_regularization_gradient
 
 
 def logistic_derivs(logistic_func, coeffs):
@@ -54,8 +56,46 @@ def logistic_regression_bounded(log_func, learning_rate, bound, stop_threshold, 
         last_cost, curr_cost = curr_cost, non_regularized_cost(log_func, pts)
 
         diff = last_cost - curr_cost
-        print("Cost after iteration {} is : {} with difference {}".format(itcount, curr_cost, diff))
-        print("Params at iteration {} are: {}".format(itcount, log_func["params"]))
+        #print("Cost after iteration {} is : {} with difference {}".format(itcount, curr_cost, diff))
+        #print("Params at iteration {} are: {}".format(itcount, log_func["params"]))
+        if 0 < diff < bound:
+            consecutive_small_count += 1
+        elif diff < 0:
+            increasing_count += 1
+
+        if consecutive_small_count > stop_threshold:
+            break
+        elif increasing_count > stop_threshold:
+            raise OverflowError
+    return log_func
+
+
+def regularized_logistic_regression(log_func, iterations, learning_rate, pts, l):
+    for itcount in xrange(iterations):
+        gradvals = regularized_gradient_descent_value(log_func, pts, squared_coefficient_regularization_gradient, l)
+        nextparams = next_params(log_func, learning_rate, gradvals)
+        log_func = logistic_function(tuple(nextparams))
+        curr_cost = regularized_cost(log_func, pts, squared_coefficient_regularization, l)
+        print("Cost after iteration {} is : {}".format(itcount, curr_cost))
+    return log_func
+
+
+def regularized_logistic_regression_bounded(log_func, learning_rate, bound, stop_threshold, pts, l):
+    curr_cost = regularized_cost(log_func, pts, squared_coefficient_regularization, l)
+    print("Initial cost is: {}".format(curr_cost))
+    increasing_count = 0
+    consecutive_small_count = 0
+    itcount = 0
+    while True:
+        itcount += 1
+        gradvals = regularized_gradient_descent_value(log_func, pts, squared_coefficient_regularization_gradient, l)
+        nextparams = next_params(log_func, learning_rate, gradvals)
+        log_func = logistic_function(nextparams)
+        last_cost, curr_cost = curr_cost, regularized_cost(log_func, pts, squared_coefficient_regularization, l)
+
+        diff = last_cost - curr_cost
+        #print("Cost after iteration {} is : {} with difference {}".format(itcount, curr_cost, diff))
+        #print("Params at iteration {} are: {}".format(itcount, log_func["params"]))
         if 0 < diff < bound:
             consecutive_small_count += 1
         elif diff < 0:
@@ -74,6 +114,15 @@ params = (0.1, 0.1, 0.1, 0.1)
 
 log_func = logistic_function(params)
 print("Cost 1: {}".format(non_regularized_cost(log_func, pts)))
+
+final_func = regularized_logistic_regression_bounded(log_func, 0.1, 0.000001, 10, pts, 0.01)
+
+
+print(list(final_func["params"]))
+
+print("Output values: {}".format([((x, y), final_func["func"](x)) for x, y in pts]))
+
+print("Vals {} // Coeffs{} // Dot: {}".format(extend_vals(pts[0][0]), final_func["params"], dot(extend_vals(pts[0][0]), final_func["params"])))
 
 final_func = logistic_regression_bounded(log_func, 0.1, 0.000001, 10, pts)
 
