@@ -1,33 +1,12 @@
-from regression_core import extend_vals, non_regularized_cost, next_params, non_regularized_gradient_descent_value,\
-    least_squares_fcost, regularized_gradient_descent_value, squared_coefficient_regularization, \
+from data_utils import standardize
+from function_definitions import linear_function
+from regression_core import non_regularized_cost, next_params, non_regularized_gradient_descent_value, \
+    regularized_gradient_descent_value, squared_coefficient_regularization, \
     squared_coefficient_regularization_gradient, regularized_cost
 
 
-def linear_derivs(coeffs):
-    def generated_deriv(n):
-        def n_deriv(vals):
-            return extend_vals(vals)[n]
-        return n_deriv
-    return tuple(generated_deriv(n) for n in xrange(len(coeffs)))
-
-
-def linear_function(coeffs):
-    def generated(vals):
-        vals = extend_vals(vals)
-        if len(vals) != len(coeffs):
-            raise IndexError
-        y = 0
-        for index in range(len(coeffs)):
-            y += coeffs[index] * vals[index]
-        return y
-    funcmap = {"func": generated, "params": coeffs, "derivs": linear_derivs(coeffs)}
-    costmap = least_squares_fcost(funcmap)
-    funcmap.update(costmap)
-    return funcmap
-
-
 def ridge_regression(lin_func, iterations, learning_rate, pts, l):
-    for itcount in xrange(iterations):
+    for itcount in range(iterations):
         gradvals = regularized_gradient_descent_value(lin_func, pts, squared_coefficient_regularization_gradient, l)
         nextparams = next_params(lin_func, learning_rate, gradvals)
         lin_func = linear_function(tuple(nextparams))
@@ -64,7 +43,7 @@ def ridge_regression_bounded(lin_func, learning_rate, bound, stop_threshold, pts
 
 
 def ols_regression(lin_func, iterations, learning_rate, pts):
-    for itcount in xrange(iterations):
+    for itcount in range(iterations):
         gradvals = non_regularized_gradient_descent_value(lin_func, pts)
         nextparams = next_params(lin_func, learning_rate, gradvals)
         lin_func = linear_function(tuple(nextparams))
@@ -101,16 +80,20 @@ def ols_regression_bounded(lin_func, learning_rate, bound, stop_threshold, pts):
 
 
 pts = (((0,), 3), ((1,), 6), ((2,), 9))
+stdpts_with_stats = standardize(pts)
+stdpts = stdpts_with_stats["points"]
+stats = stdpts_with_stats["stats"]
+print("Standardized points: {}".format(stdpts))
 params = (-20, 10)
 
 lin_func = linear_function(params)
-print("Cost 1: {}".format(non_regularized_cost(lin_func, pts)))
+print("Cost 1: {}".format(non_regularized_cost(lin_func, stdpts)))
 
-final_func = ridge_regression_bounded(lin_func, 0.01, 0.000001, 10, pts, 200)
+final_func = ridge_regression_bounded(lin_func, 0.01, 0.000001, 10, stdpts, 200)
 
 print(list(final_func["params"]))
 
-final_func = ols_regression_bounded(lin_func, 0.1, 0.000001, 10, pts)
+final_func = ols_regression_bounded(lin_func, 0.1, 0.000001, 10, stdpts)
 
 print(list(final_func["params"]))
 

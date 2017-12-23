@@ -1,39 +1,12 @@
-import math
-
+from data_utils import standardize
+from function_definitions import logistic_function
 from regression_core import extend_vals, non_regularized_cost, next_params, dot, \
-    non_regularized_gradient_descent_value,logistic_fcost, regularized_gradient_descent_value, regularized_cost, \
+    non_regularized_gradient_descent_value, regularized_gradient_descent_value, regularized_cost, \
     squared_coefficient_regularization, squared_coefficient_regularization_gradient
 
 
-def logistic_derivs(logistic_func, coeffs):
-    def generated_deriv(n):
-        def n_deriv(vals):
-            evals = extend_vals(vals)
-            if type(vals) != type(coeffs) or len(evals) != len(coeffs):
-                print("Error in list sizes. Vals {} // Coeffs {}".format(evals, coeffs))
-                raise IndexError
-            prod = dot(evals, coeffs)
-            deriv = -logistic_func(vals)**2 * (-evals[n] * math.exp(-prod))
-            return deriv
-        return n_deriv
-    return tuple(generated_deriv(n) for n in xrange(len(coeffs)))
-
-
-def logistic_function(coeffs):
-    def generated(vals):
-        vals = extend_vals(vals)
-        if len(vals) != len(coeffs):
-            raise IndexError
-        prod = dot(vals, coeffs)
-        return 1/(1 + math.exp(-prod))
-    funcmap = {"func": generated, "params": coeffs, "derivs": logistic_derivs(generated, coeffs)}
-    costmap = logistic_fcost(funcmap)
-    funcmap.update(costmap)
-    return funcmap
-
-
 def logistic_regression(log_func, iterations, learning_rate, pts):
-    for itcount in xrange(iterations):
+    for itcount in range(iterations):
         gradvals = non_regularized_gradient_descent_value(log_func, pts)
         nextparams = next_params(log_func, learning_rate, gradvals)
         log_func = logistic_function(tuple(nextparams))
@@ -71,7 +44,7 @@ def logistic_regression_bounded(log_func, learning_rate, bound, stop_threshold, 
 
 
 def regularized_logistic_regression(log_func, iterations, learning_rate, pts, l):
-    for itcount in xrange(iterations):
+    for itcount in range(iterations):
         gradvals = regularized_gradient_descent_value(log_func, pts, squared_coefficient_regularization_gradient, l)
         nextparams = next_params(log_func, learning_rate, gradvals)
         log_func = logistic_function(tuple(nextparams))
@@ -94,8 +67,8 @@ def regularized_logistic_regression_bounded(log_func, learning_rate, bound, stop
         last_cost, curr_cost = curr_cost, regularized_cost(log_func, pts, squared_coefficient_regularization, l)
 
         diff = last_cost - curr_cost
-        #print("Cost after iteration {} is : {} with difference {}".format(itcount, curr_cost, diff))
-        #print("Params at iteration {} are: {}".format(itcount, log_func["params"]))
+        # print("Cost after iteration {} is : {} with difference {}".format(itcount, curr_cost, diff))
+        # print("Params at iteration {} are: {}".format(itcount, log_func["params"]))
         if 0 < diff < bound:
             consecutive_small_count += 1
         elif diff < 0:
@@ -110,25 +83,30 @@ def regularized_logistic_regression_bounded(log_func, learning_rate, bound, stop
 
 pts = (((0.1, 0.8, 0.2), 0), ((0.4, 0.92, 0.35), 0), ((0.3, 0.89, 0.22), 0), ((0.2, 0.81, 0.27), 0),
        ((0.75, 0.4, 0.4), 1), ((0.7, 0.79, 0.4), 1), ((0.9, 0.52, 0.73), 1), ((0.6, 0.01, 0.99), 1))
+
+stdpts_with_stats = standardize(pts)
+stdpts = stdpts_with_stats["points"]
+stats = stdpts_with_stats["stats"]
+print("Standardized points: {} // stats {}".format(stdpts, stats))
 params = (0.1, 0.1, 0.1, 0.1)
 
 log_func = logistic_function(params)
-print("Cost 1: {}".format(non_regularized_cost(log_func, pts)))
+print("Cost 1: {}".format(non_regularized_cost(log_func, stdpts)))
 
-final_func = regularized_logistic_regression_bounded(log_func, 0.1, 0.000001, 10, pts, 0.01)
+final_func = regularized_logistic_regression_bounded(log_func, 0.1, 0.000001, 10, stdpts, 0.01)
 
 
 print(list(final_func["params"]))
 
-print("Output values: {}".format([((x, y), final_func["func"](x)) for x, y in pts]))
+print("Output values: {}".format([((x, y), final_func["func"](x)) for x, y in stdpts]))
 
 print("Vals {} // Coeffs{} // Dot: {}".format(extend_vals(pts[0][0]), final_func["params"], dot(extend_vals(pts[0][0]), final_func["params"])))
 
-final_func = logistic_regression_bounded(log_func, 0.1, 0.000001, 10, pts)
+final_func = logistic_regression_bounded(log_func, 0.1, 0.000001, 10, stdpts)
 
 
 print(list(final_func["params"]))
 
-print("Output values: {}".format([((x, y), final_func["func"](x)) for x, y in pts]))
+print("Output values: {}".format([((x, y), final_func["func"](x)) for x, y in stdpts]))
 
 print("Vals {} // Coeffs{} // Dot: {}".format(extend_vals(pts[0][0]), final_func["params"], dot(extend_vals(pts[0][0]), final_func["params"])))

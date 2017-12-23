@@ -34,18 +34,18 @@ def logistic_fcost(func_premap):
 
 
 def squared_coefficient_regularization(params):
-    return sum(params[n]**2 for n in xrange(1, len(params)))
+    return sum(params[n]**2 for n in range(1, len(params)))
 
 
 def squared_coefficient_regularization_gradient(params):
-    pre = tuple(2*params[n] for n in xrange(1, len(params)))
+    pre = tuple(2*params[n] for n in range(1, len(params)))
     return (0,) + pre
 
 def no_regularization(params):
     return 0
 
 def no_regularization_gradient(params):
-    return tuple(0 for n in xrange(len(params)))
+    return tuple(0 for n in range(len(params)))
 
 
 def non_regularized_cost(funcmap, pts):
@@ -60,7 +60,7 @@ def non_regularized_gradient_descent_value(funcmap, pts):
     cost_function_derivative = funcmap["cost_deriv"]
     numcoeffs = len(derivs)
     np = len(pts)
-    gradvals = tuple(math.fsum(cost_function_derivative(n, x, y) for x, y in pts) / np for n in xrange(numcoeffs))
+    gradvals = tuple(math.fsum(cost_function_derivative(n, x, y) for x, y in pts) / np for n in range(numcoeffs))
     return gradvals
 
 
@@ -75,7 +75,7 @@ def regularized_gradient_descent_value(funcmap, pts, regularization_gradient = n
     rgrad = regularization_gradient(funcmap["params"])
     gradvals = non_regularized_gradient_descent_value(funcmap, pts)
     np = len(pts)
-    gradvals_final = tuple(gradvals[n] + l / np * rgrad[n] for n in xrange(len(gradvals)))
+    gradvals_final = tuple(gradvals[n] + l / np * rgrad[n] for n in range(len(gradvals)))
     return gradvals_final
 
 
@@ -86,7 +86,36 @@ def dot(a, b):
     return sum(a[n] * b[n] for n in range(0, len(a)))
 
 
+def mat_mult(m, n):
+    mat = []
+    for j in range(len(m)):
+        row = m[j]
+        ncols = len(n[0])
+        cols = [[r[c] for r in n] for c in range(ncols)]
+        prn = [dot(row, cols[c]) for c in range(ncols)]
+        mat.append(tuple(prn))
+    return tuple(mat)
+
+
+def init_matrix(n, m, func):
+    return tuple(tuple(func(i, j) for i in range(n)) for j in range(m))
+
+
+def val_matrix(n, m, val = 0):
+    return init_matrix(n, m, const_func(val))
+
+
+def const_func(val):
+    def cfunc(i, j):
+        return val
+    return cfunc
+
+
 def next_params(funcmap, learning_rate, gradvals):
     params = funcmap["params"]
-    newcoeffs = tuple(params[n] - learning_rate * gradvals[n] for n in xrange(len(params)))
+    newcoeffs = tuple(params[n] - learning_rate * gradvals[n] for n in range(len(params)))
     return newcoeffs
+
+mat_one = ((0, 1), (1, 0))
+mat_two = ((3,), (1,))
+print("{}".format(mat_mult(mat_one, mat_mult(mat_one, mat_two))))
