@@ -43,10 +43,7 @@ def linear_function(coeffs):
         vals = extend_vals(vals)
         if len(vals) != len(coeffs):
             raise IndexError
-        y = 0
-        for index in range(len(coeffs)):
-            y += coeffs[index] * vals[index]
-        return y
+        return sum(c*v for (c, v) in zip(coeffs, vals))
     funcmap = {"func": generated, "params": coeffs, "derivs": linear_derivs(coeffs)}
     costmap = least_squares_fcost(funcmap)
     funcmap.update(costmap)
